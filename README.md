@@ -6,7 +6,6 @@ mkdir build
 cd build
 cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=89 -DCMAKE_INSTALL_PREFIX=/colmap-install -DBLA_VENDOR=Intel10_64lp
 ninja
-ninja install
 ```
 
 COLMAP
