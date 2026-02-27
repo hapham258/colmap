@@ -1,0 +1,51 @@
+FROM stereolabs/zed:5.0-gl-devel-cuda12.8-ubuntu22.04
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt -o APT::Sandbox::User=root update
+
+# Prevent stop building ubuntu at time zone selection.
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Prepare and empty machine for building.
+RUN apt-get update && \
+    apt-get install -y \
+        git \
+        cmake \
+        ninja-build \
+        build-essential \
+        libboost-program-options-dev \
+        libboost-graph-dev \
+        libboost-system-dev \
+        libeigen3-dev \
+        libopenimageio-dev \
+        openimageio-tools \
+        libmetis-dev \
+        libgoogle-glog-dev \
+        libgtest-dev \
+        libgmock-dev \
+        libsqlite3-dev \
+        libglew-dev \
+        qt6-base-dev \
+        libqt6opengl6-dev \
+        libqt6openglwidgets6 \
+        libcgal-dev \
+        libceres-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libmkl-full-dev
+            
+# Fix issue in Ubuntu's openimageio CMake config.
+# We don't depend on any of openimageio's OpenCV functionality,
+# but it still requires the OpenCV include directory to exist.
+RUN mkdir -p /usr/include/opencv4
+
+# Extra packages
+RUN apt update
+RUN apt install -y --no-install-recommends \
+        libopenexr-dev \
+        qtbase5-dev \
+        libqt5opengl5-dev
+
+RUN mkdir /workspace
+WORKDIR /workspace
