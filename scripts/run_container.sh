@@ -31,8 +31,7 @@ echo "Container's image: $img"
 
 # Setup mounting-related arguments
 mounting_args="-v /tmp/.X11-unix:/tmp/.X11-unix -v $(pwd):/workspace"
-mounting_args="$mounting_args -v $HOME/Documents/SLAM_Datasets:/home/datasets"
-mounting_args="$mounting_args -v $HOME/Documents/SLAM_Testings:/home/testings"
+mounting_args="$mounting_args -v $HOME/Documents/VisLoc_Datasets:/home/datasets"
 echo "Mounting-related arguments: $mounting_args"
 
 # Run the container
