@@ -1,3 +1,15 @@
+Setup for `NVIDIA GeForce RTX 5090 GPU`:
+```
+sudo mkdir -p /usr/include/opencv4
+mkdir build
+cd build
+cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=120 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../install -DBLA_VENDOR=Intel10_64lp
+ninja -j16
+ninja install
+cd ..
+export LD_LIBRARY_PATH=$HOME/colmap/install/thirdparty:$HOME/colmap/install/lib:$LD_LIBRARY_PATH
+```
+
 COLMAP
 ======
 
