@@ -9,6 +9,38 @@ ninja install
 cd ..
 export LD_LIBRARY_PATH=$HOME/colmap/install/thirdparty:$HOME/colmap/install/lib:$LD_LIBRARY_PATH
 ```
+Run demo with South Building dataset:
+```
+export IMG_PATH=$HOME/Documents/VisLoc_Datasets/South_Building/images
+export OUT_PATH=$(pwd)/output/south_building
+
+# Extract features
+./install/bin/colmap feature_extractor \
+    --database_path $OUT_PATH/database.db --image_path $IMG_PATH \
+    --ImageReader.single_camera 1 --FeatureExtraction.use_gpu 1
+  
+# Match features
+./install/bin/colmap exhaustive_matcher \
+    --database_path $OUT_PATH/database.db \
+    --FeatureMatching.use_gpu 1
+
+# Reconstruct
+mkdir -p $OUT_PATH/sparse
+./install/bin/colmap mapper \
+    --database_path $OUT_PATH/database.db --image_path $IMG_PATH --output_path $OUT_PATH/sparse \
+    --Mapper.ba_use_gpu 1
+
+# Reconstruct (global case)
+mkdir -p $OUT_PATH/sparse_global
+./install/bin/colmap global_mapper \
+    --database_path $OUT_PATH/database.db --image_path $IMG_PATH --output_path $OUT_PATH/sparse_global \
+    --GlobalMapper.gp_use_gpu 1
+
+# Analyze and visualize the final model
+./install/bin/colmap model_analyzer --path $OUT_PATH/sparse/0
+./install/bin/colmap gui \
+    --database_path $OUT_PATH/database.db --image_path $IMG_PATH --import_path $OUT_PATH/sparse/0
+```
 
 COLMAP
 ======
