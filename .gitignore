@@ -55,3 +55,7 @@ output/
 # backup files
 *~
 *.orig
+
+# Submodule builds & installs
+thirdparty/*-build/
+thirdparty/*-install/

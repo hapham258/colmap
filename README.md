@@ -1,9 +1,28 @@
+Build thirdparty libraries for `NVIDIA GeForce RTX 5090 GPU`:
+```
+cd thirdparty/ceres
+git submodule update --init --recursive
+cd ..
+mkdir -p ceres-build && cd ceres-build
+cmake ../ceres -GNinja \
+  -DWITH_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=120 \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=../ceres-install \
+  -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DBUILD_BENCHMARKS=OFF
+ninja -j16
+ninja install
+cd ../../
+```
 Setup for `NVIDIA GeForce RTX 5090 GPU`:
 ```
 sudo mkdir -p /usr/include/opencv4
-mkdir build
-cd build
-cmake .. -GNinja -DCMAKE_CUDA_ARCHITECTURES=120 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../install -DBLA_VENDOR=Intel10_64lp
+mkdir build && cd build
+cmake .. -GNinja \
+  -DCMAKE_CUDA_ARCHITECTURES=120 \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCeres_DIR=$HOME/colmap/thirdparty/ceres-install/lib/cmake/Ceres \
+  -DCMAKE_INSTALL_PREFIX=$HOME/colmap/install \
+  -DBLA_VENDOR=Intel10_64lp
 ninja -j16
 ninja install
 cd ..
@@ -13,16 +32,23 @@ Run demo with South Building dataset:
 ```
 export IMG_PATH=$HOME/Documents/VisLoc_Datasets/South_Building/images
 export OUT_PATH=$(pwd)/output/south_building
+mkdir -p $OUT_PATH
 
 # Extract features
 ./install/bin/colmap feature_extractor \
     --database_path $OUT_PATH/database.db --image_path $IMG_PATH \
-    --ImageReader.single_camera 1 --FeatureExtraction.use_gpu 1
+    --ImageReader.single_camera 1 --FeatureExtraction.use_gpu 1 --FeatureExtraction.type ALIKED_N16ROT
   
 # Match features
 ./install/bin/colmap exhaustive_matcher \
     --database_path $OUT_PATH/database.db \
-    --FeatureMatching.use_gpu 1
+    --FeatureMatching.use_gpu 1 --FeatureMatching.type ALIKED_LIGHTGLUE
+
+# Match features (sequential)
+./install/bin/colmap sequential_matcher \
+    --database_path $OUT_PATH/database.db \
+    --FeatureMatching.use_gpu 1 --FeatureMatching.type ALIKED_LIGHTGLUE \
+    --SequentialMatching.overlap 10
 
 # Reconstruct
 mkdir -p $OUT_PATH/sparse
@@ -30,10 +56,11 @@ mkdir -p $OUT_PATH/sparse
     --database_path $OUT_PATH/database.db --image_path $IMG_PATH --output_path $OUT_PATH/sparse \
     --Mapper.ba_use_gpu 1
 
-# Reconstruct (global case)
-mkdir -p $OUT_PATH/sparse_global
+# Reconstruct (global)
+mkdir -p $OUT_PATH/sparse
+./install/bin/colmap view_graph_calibrator --database_path $OUT_PATH/database.db
 ./install/bin/colmap global_mapper \
-    --database_path $OUT_PATH/database.db --image_path $IMG_PATH --output_path $OUT_PATH/sparse_global \
+    --database_path $OUT_PATH/database.db --image_path $IMG_PATH --output_path $OUT_PATH/sparse \
     --GlobalMapper.gp_use_gpu 1
 
 # Analyze and visualize the final model
